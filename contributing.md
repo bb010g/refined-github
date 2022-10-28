@@ -114,11 +114,11 @@ Then load or reload it into the browser to see the changes.
 Once built, load it in the browser of your choice with [web-ext](https://github.com/mozilla/web-ext):
 
 ```sh
-npx web-ext run --target=chromium # Open extension in Chrome
+npm run -- web-ext run --target=chromium # Open extension in Chrome
 ```
 
 ```sh
-npx web-ext run # Open extension in Firefox
+npm run -- web-ext run # Open extension in Firefox
 ```
 
 Or you can [load it manually in Chrome](https://www.smashingmagazine.com/2017/04/browser-extension-edge-chrome-firefox-opera-brave-vivaldi/#google-chrome-opera-vivaldi) or [Firefox](https://www.smashingmagazine.com/2017/04/browser-extension-edge-chrome-firefox-opera-brave-vivaldi/#mozilla-firefox).
