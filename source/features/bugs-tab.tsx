@@ -10,7 +10,7 @@ import * as api from '../github-helpers/api';
 import {getRepo} from '../github-helpers';
 import SearchQuery from '../github-helpers/search-query';
 import abbreviateNumber from '../helpers/abbreviate-number';
-import {highlightTab, unhighlightTab} from '../helpers/dom-utils';
+import {highlightTab, selectLink, unhighlightTab} from '../helpers/dom-utils';
 
 const supportedLabels = /^(bug|bug-?fix|confirmed-bug|type[:/]bug|kind[:/]bug|(:[\w-]+:|\p{Emoji})bug)$/iu;
 const getBugLabelCacheKey = (): string => 'bugs-label:' + getRepo()!.nameWithOwner;
@@ -96,11 +96,11 @@ async function addBugsTab(): Promise<void | false> {
 	// Copy Issues tab
 	const bugsTab = issuesTab.cloneNode(true);
 	bugsTab.classList.add('rgh-bugs-tab');
+	bugsTab.setAttribute('data-selected-links', 'repo_bugs');
 	unhighlightTab(bugsTab);
 
 	// Disable unwanted behavior #3001
 	delete bugsTab.dataset.hotkey;
-	delete bugsTab.dataset.selectedLinks;
 	bugsTab.removeAttribute('id');
 
 	// Update its appearance
@@ -119,7 +119,7 @@ async function addBugsTab(): Promise<void | false> {
 
 	// In case GitHub changes its layout again #4166
 	if (issuesTab.parentElement instanceof HTMLLIElement) {
-		issuesTab.parentElement.after(<li className="d-flex">{bugsTab}</li>);
+		issuesTab.parentElement.after(<li className="d-inline-flex">{bugsTab}</li>);
 	} else {
 		issuesTab.after(bugsTab);
 	}
@@ -139,6 +139,8 @@ async function addBugsTab(): Promise<void | false> {
 }
 
 function highlightBugsTab(): void {
+	selectLink('repo_bugs');
+
 	// Remove highlighting from "Issues" tab
 	unhighlightTab(select('.UnderlineNav-item[data-hotkey="g i"]')!);
 	highlightTab(select('.rgh-bugs-tab')!);
