@@ -17,7 +17,8 @@
 		"watch": "run-p watch:* --continue-on-error",
 		"watch:typescript": "tsc --noEmit --watch --preserveWatchOutput",
 		"watch:webpack": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" webpack --mode=development --watch",
-		"web-ext": "web-ext"
+		"web-ext": "web-ext",
+		"webpack": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" webpack"
 	},
 	"stylelint": {
 		"extends": "stylelint-config-xo",

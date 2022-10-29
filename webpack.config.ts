@@ -5,93 +5,104 @@ import SizePlugin from 'size-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import webpack, {Configuration} from 'webpack';
+import {CallableOption} from 'webpack-cli';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
-const config: Configuration = {
-	devtool: false, // Only inline source maps work in extensions, but they would slow down the extension for everyone
-	stats: {
-		all: false,
-		errors: true,
-	},
-	entry: Object.fromEntries([
-		'refined-github',
-		'background',
-		'options',
-		'resolve-conflicts',
-	].map(name => [name, `./${name}`])),
-	context: path.resolve('source'),
-	output: {
-		path: path.resolve('distribution'),
-	},
-	module: {
-		rules: [
-			{
-				test: /[/\\]readme\.md$/,
-				loader: '../build/readme.loader.cts',
-			},
-			{
-				test: /\.tsx?$/,
-				loader: 'esbuild-loader',
-				options: {
-					loader: 'tsx',
-					target: 'es2020',
-				},
-			},
-			{
-				test: /\.css$/,
-				use: [
-					MiniCssExtractPlugin.loader,
-					'css-loader',
-				],
-			},
-		],
-	},
-	plugins: [
-		new MiniCssExtractPlugin(),
-		new webpack.ProvidePlugin({
-			browser: 'webextension-polyfill',
-		}),
-		new CopyWebpackPlugin({
-			patterns: [
-				'*.+(html|json|png)',
-			],
-		}),
-		new SizePlugin({writeFile: false}),
-	],
-	resolve: {
-		alias: {
-			react: 'dom-chef',
+const getConfig: CallableOption = (_env, argv) => {
+	const { mode } = argv;
+	const development = mode === "development";
+	// const production = mode === "production" || !mode;
+
+	const config: Configuration = {
+		// Only inline source maps work in extensions, but they would slow down the extension for everyone
+		devtool: development ? 'inline-source-map' : false,
+		stats: {
+			all: false,
+			errors: true,
 		},
-		extensions: [
-			'.tsx',
-			'.ts',
-			'.js',
-		],
-	},
-	optimization: {
-		// Keeps it somewhat readable for AMO reviewers
-		minimizer: [
-			new TerserPlugin({
-				parallel: true,
-				terserOptions: {
-					mangle: false,
-					output: {
-						beautify: true,
-						indent_level: 2,
+		entry: Object.fromEntries([
+			'refined-github',
+			'background',
+			'options',
+			'resolve-conflicts',
+		].map(name => [name, `./${name}`])),
+		context: path.resolve('source'),
+		output: {
+			path: path.resolve('distribution'),
+			uniqueName: 'refined-github',
+		},
+		module: {
+			rules: [
+				{
+					test: /[/\\]readme\.md$/,
+					loader: '../build/readme.loader.cts',
+				},
+				{
+					test: /\.tsx?$/,
+					loader: 'esbuild-loader',
+					options: {
+						loader: 'tsx',
+						target: 'es2020',
 					},
 				},
+				{
+					test: /\.css$/,
+					use: [
+						MiniCssExtractPlugin.loader,
+						'css-loader',
+					],
+				},
+			],
+		},
+		plugins: [
+			new MiniCssExtractPlugin(),
+			new webpack.ProvidePlugin({
+				browser: 'webextension-polyfill',
 			}),
+			new CopyWebpackPlugin({
+				patterns: [
+					'*.+(html|json|png)',
+				],
+			}),
+			new SizePlugin({writeFile: false}),
 		],
-	},
+		resolve: {
+			alias: {
+				react: 'dom-chef',
+			},
+			extensions: [
+				'.tsx',
+				'.ts',
+				'.js',
+			],
+		},
+		optimization: {
+			// Keeps it somewhat readable for AMO reviewers
+			minimizer: [
+				new TerserPlugin({
+					parallel: true,
+					terserOptions: {
+						mangle: false,
+						output: {
+							beautify: true,
+							indent_level: 2,
+						},
+					},
+				}),
+			],
+		},
+	};
+
+	if (process.env.CI) {
+		config.stats = {
+			assets: true,
+			entrypoints: true,
+			chunks: true,
+			modules: true,
+		};
+	}
+
+	return config;
 };
 
-if (process.env.CI) {
-	config.stats = {
-		assets: true,
-		entrypoints: true,
-		chunks: true,
-		modules: true,
-	};
-}
-
-export default config;
+export default getConfig;
